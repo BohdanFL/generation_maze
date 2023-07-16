@@ -34,7 +34,6 @@ const startBtn = document.getElementById("start-btn");
 const colsBtn = document.getElementById("cols-btn");
 const rowsBtn = document.getElementById("rows-btn");
 
-
 class MazeCell {
     constructor(position = { x: 0, y: 0 }) {
         this.borders = { top: 1, bottom: 1, left: 1, right: 1 };
@@ -290,14 +289,14 @@ class Generator {
     }
 }
 
-const rows = parseInt(rowsBtn.value) || 15
-const cols = parseInt(colsBtn.value) || 15
+const rows = parseInt(rowsBtn.value);
+const cols = parseInt(colsBtn.value);
 let maze = new Maze(rows, cols);
 let generator = new Generator({ x: 0, y: 0 });
 
 startBtn.addEventListener("click", () => {
-    maze.rows = parseInt(rowsBtn.value)
-    maze.cols = parseInt(colsBtn.value)
+    maze.rows = parseInt(rowsBtn.value);
+    maze.cols = parseInt(colsBtn.value);
     generator.reset();
     maze.reset();
     maze.render();
