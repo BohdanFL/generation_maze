@@ -10,7 +10,7 @@
 
 
 .maze-cell {
-    width: 20px;
+    min-width: 20px;
     height: 20px;
     background-color: rgb(226, 226, 226);
     border: 1px solid;
@@ -23,10 +23,23 @@
 
 .generator {
     position: absolute;
-    inset: 3px 0 x 3px;
+    inset: 3px 0 0 3px;
     width: 15px;
     height: 15px;
     background-color: orange;
     border-radius: 50px;
-    transition: inset 50ms linear;
+    transition: inset 100ms linear;
+}
+
+#start-btn {
+    position: absolute;
+    top: 50px; left: 50%;
+    transform: translate(-50%, 0%);
+    background-color: black;
+    border-radius: 20px;
+    color: white;
+    width: 150px;
+    height: 30px;
+    border: none;
+    text-transform: uppercase;
 }

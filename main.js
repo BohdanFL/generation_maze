@@ -30,6 +30,8 @@ const randomProperty = (object) => {
     return null;
 };
 
+const startBtn = document.getElementById("start-btn")
+
 class MazeCell {
     constructor(position = { x: 0, y: 0 }) {
         this.borders = { top: 1, bottom: 1, left: 1, right: 1 };
@@ -265,13 +267,16 @@ class Generator {
 }
 
 const maze = new Maze(15, 15);
-const generator = new Generator({ x: 6, y: 6 });
-
+const generator = new Generator({ x: 0, y: 0 });
 maze.render();
-maze.setGenerator(generator);
-maze.generate();
-maze.generateEntrance();
 
+
+
+startBtn.addEventListener("click", () => {
+    maze.setGenerator(generator);
+    maze.generate();
+    maze.generateEntrance();
+})
 // TODO:
 // Multiple generator
 // Rewrite on grid-layout
