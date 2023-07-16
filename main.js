@@ -31,6 +31,9 @@ const randomProperty = (object) => {
 };
 
 const startBtn = document.getElementById("start-btn");
+const colsBtn = document.getElementById("cols-btn");
+const rowsBtn = document.getElementById("rows-btn");
+
 
 class MazeCell {
     constructor(position = { x: 0, y: 0 }) {
@@ -286,10 +289,15 @@ class Generator {
         ${3 + this.position.x * 20}px`;
     }
 }
-let maze = new Maze(15, 15);
+
+const rows = parseInt(rowsBtn.value) || 15
+const cols = parseInt(colsBtn.value) || 15
+let maze = new Maze(rows, cols);
 let generator = new Generator({ x: 0, y: 0 });
 
 startBtn.addEventListener("click", () => {
+    maze.rows = parseInt(rowsBtn.value)
+    maze.cols = parseInt(colsBtn.value)
     generator.reset();
     maze.reset();
     maze.render();
