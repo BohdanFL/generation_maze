@@ -30,7 +30,7 @@ const randomProperty = (object) => {
     return null;
 };
 
-const startBtn = document.getElementById("start-btn")
+const startBtn = document.getElementById("start-btn");
 
 class MazeCell {
     constructor(position = { x: 0, y: 0 }) {
@@ -51,7 +51,11 @@ class Maze {
     }
 
     render() {
-        let mazeHtml = `<table class="maze">`;
+        let mazeHtml = document.querySelector("table.maze");
+        if (mazeHtml) {
+            mazeHtml.remove();
+        }
+        mazeHtml = `<table class="maze">`;
 
         for (let i = 0; i < this.rows; i++) {
             mazeHtml += `<tr class="maze-row">`;
@@ -104,8 +108,12 @@ class Maze {
     }
 
     generate() {
-        const stepping = (counter = 0) => {
-            setTimeout(() => {
+        if (this.stepping && this.timeoutID) {
+            this.stepping = 0;
+            clearTimeout(this.timeoutID);
+        }
+        this.stepping = (counter = 0) => {
+            this.timeoutID = setTimeout(() => {
                 counter++;
                 // Отримуємо сторону наступного кроку
                 const nextSide = this.generator.getNextSide();
@@ -144,14 +152,14 @@ class Maze {
                     this.generator.moveTo(backMoveVector);
                 }
                 if (this.cells.length !== this.passedCells.length) {
-                    stepping();
+                    this.stepping();
                 } else {
                     this.generated = true;
                     console.log("GENERATING HAVE BEEN FINISHED");
                 }
             }, 100);
         };
-        stepping();
+        this.stepping();
     }
 
     generateEntrance(amount = 0) {
@@ -163,7 +171,7 @@ class Maze {
             sidesKeys[Math.floor(Math.random() * sidesKeys.length)];
 
         let cellIndex;
-        
+
         if (randomSide === "top") {
             cellIndex = randomCol;
         } else if (randomSide === "bottom") {
@@ -175,6 +183,12 @@ class Maze {
         }
 
         this.updateCellBorder(cellIndex, randomSide);
+    }
+
+    reset() {
+        this.cells = [];
+        this.passedCells = [];
+        this.generated = false;
     }
 }
 
@@ -264,19 +278,25 @@ class Generator {
         this.html.style.inset = `${3 + this.position.y * 20}px 0 0 
                                 ${3 + this.position.x * 20}px`;
     }
+
+    reset(position = { x: 0, y: 0 }) {
+        this.takenPath = [];
+        this.position = position;
+        this.html.style.inset = `${3 + this.position.y * 20}px 0 0 
+        ${3 + this.position.x * 20}px`;
+    }
 }
-
-const maze = new Maze(15, 15);
-const generator = new Generator({ x: 0, y: 0 });
-maze.render();
-
-
+let maze = new Maze(15, 15);
+let generator = new Generator({ x: 0, y: 0 });
 
 startBtn.addEventListener("click", () => {
+    generator.reset();
+    maze.reset();
+    maze.render();
     maze.setGenerator(generator);
     maze.generate();
     maze.generateEntrance();
-})
+});
 // TODO:
 // Multiple generator
 // Rewrite on grid-layout
