@@ -1,0 +1,32 @@
+* {
+    box-sizing: border-box;
+}
+
+.maze {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+.maze-cell {
+    width: 20px;
+    height: 20px;
+    background-color: rgb(226, 226, 226);
+    border: 1px solid;
+}
+
+.maze-cell.passed {
+    background-color: #fff;
+}
+
+
+.generator {
+    position: absolute;
+    inset: 3px 0 x 3px;
+    width: 15px;
+    height: 15px;
+    background-color: orange;
+    border-radius: 50px;
+    transition: inset 50ms linear;
+}
