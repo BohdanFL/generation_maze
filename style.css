@@ -43,3 +43,23 @@
     border: none;
     text-transform: uppercase;
 }
+
+.options {
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    top: 100px;
+    width: 100%;
+}
+
+label {
+    width: 100%;
+}
+
+input {
+    margin-bottom: 10px;
+    height: 30px;
+    font-size: 18px;
+}
