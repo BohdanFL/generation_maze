@@ -53,6 +53,7 @@ class Maze {
         this.parent = document.body;
         this.cells = [];
         this.passedCells = [];
+        this.entrances = [];
         this.generated = false;
         this.generating = false;
         this.rendered = false;
@@ -188,7 +189,7 @@ class Maze {
         }
     }
 
-    generateEntrance(amount = 4) {
+    generateEntrances(amount = 1) {
         for (let i = 0; i < amount; i++) {
             const randomRow = Math.floor(Math.random() * this.rows);
             const randomCol = Math.floor(Math.random() * this.cols);
@@ -208,13 +209,19 @@ class Maze {
                 cellIndex = randomRow * this.cols + (this.cols - 1);
             }
 
-            this.updateCellBorder(cellIndex, randomSide);
+            if (this.entrances.includes(this.cells[cellIndex])) {
+                i--;
+            } else {
+                this.entrances.push(this.cells[cellIndex]);
+                this.updateCellBorder(cellIndex, randomSide);
+            }
         }
     }
 
     reset() {
         this.cells = [];
         this.passedCells = [];
+        this.entrances = [];
         this.progress = 0;
         progressBar.value = Math.round(this.progress);
         this.generated = false;
@@ -328,6 +335,7 @@ const toggleStartBtnName = () => {
 
 const rows = parseInt(rowsBtn.value) || 15;
 const cols = parseInt(colsBtn.value) || 15;
+const amountEntrances = 4;
 let maze = new Maze(rows, cols);
 let generator = new Generator({ x: 0, y: 0 });
 let generator1 = new Generator({ x: 0, y: rows - 1 });
@@ -337,7 +345,7 @@ let generator3 = new Generator({ x: cols - 1, y: rows - 1 });
 const generators = [generator, generator1, generator2, generator3];
 maze.render();
 maze.setGenerators(generators);
-maze.generateEntrance();
+maze.generateEntrances(amountEntrances);
 
 startBtn.addEventListener("click", () => {
     maze.generating = !maze.generating;
@@ -388,14 +396,16 @@ resetBtn.addEventListener("click", () => {
     maze.reset();
     maze.render();
     maze.setGenerators(generators);
-    maze.generateEntrance();
+    maze.generateEntrances(amountEntrances);
 });
 
 // TODO:
-// Multiple generator - done
+// stop when have found entrance(entrances)
+// option(entrances, generators)
 // export
 // another algorithms
-// multiply entrances
+// multiply entrances - done
+// Multiple generator - done
 // Button stop and start - done
 // procents of completing - done
 // setting of speed - done
