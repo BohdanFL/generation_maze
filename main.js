@@ -36,8 +36,10 @@ const resetBtn = document.getElementById("reset-btn");
 const colsBtn = document.getElementById("cols-btn");
 const rowsBtn = document.getElementById("rows-btn");
 const speedBtn = document.getElementById("speed-btn");
-const entrancesBtn = document.getElementById("entrances-btn");
 const progressBar = document.getElementById("progress-bar");
+const entrancesBtn = document.getElementById("entrances-btn");
+const generatorsBtn = document.getElementById("generators-btn");
+const generatorsList = document.querySelector(".generators__list");
 
 class MazeCell {
     constructor(position = { x: 0, y: 0 }) {
@@ -55,6 +57,7 @@ class Maze {
         this.cells = [];
         this.passedCells = [];
         this.entrances = [];
+        this.generators = [];
         this.generated = false;
         this.generating = false;
         this.rendered = false;
@@ -122,7 +125,6 @@ class Maze {
         this.generators.forEach((generator) => {
             generator.maze = this;
             const mazeHtml = this.parent.querySelector(".maze");
-            console.log(generator.position);
             const cellIndex =
                 generator.position.x + generator.position.y * this.rows;
             this.setCellPassed(cellIndex);
@@ -223,6 +225,7 @@ class Maze {
         this.cells = [];
         this.passedCells = [];
         this.entrances = [];
+        this.generators = [];
         this.progress = 0;
         progressBar.value = Math.round(this.progress);
         this.generated = false;
@@ -339,15 +342,13 @@ const cols = parseInt(colsBtn.value) || 15;
 let amountEntrances = parseInt(entrancesBtn.value) || 1;
 
 let maze = new Maze(rows, cols);
-let generator = new Generator({ x: 0, y: 0 });
-let generator1 = new Generator({ x: 0, y: rows - 1 });
-let generator2 = new Generator({ x: cols - 1, y: 0 });
-let generator3 = new Generator({ x: cols - 1, y: rows - 1 });
-
-const generators = [generator, generator1, generator2, generator3];
+// let generator = new Generator({ x: 0, y: 0 });
+let generatorsItemX;
+let generatorsItemY;
+let generators = [];
 
 maze.render();
-maze.setGenerators(generators);
+// maze.setGenerators(generators);
 maze.generateEntrances(amountEntrances);
 
 startBtn.addEventListener("click", () => {
@@ -370,6 +371,52 @@ document.body.addEventListener("keydown", (e) => {
         generators.forEach((gener) => {
             gener.html.style.transitionDuration = speedBtn.value + "ms";
         });
+
+        //Generators
+        if (
+            !parseInt(generatorsBtn.value) ||
+            parseInt(generatorsBtn.value) <= 0 ||
+            parseInt(generatorsBtn.value) > maze.rows * maze.cols
+        ) {
+            generatorsBtn.value = 1;
+        }
+        // generators = [];
+
+        let endIteration = parseInt(generatorsBtn.value);
+        let startIteration = generatorsItemX ? generatorsItemX.length : 0;
+
+        if (startIteration > parseInt(generatorsBtn.value)) {
+            for (let i = startIteration - 1; i > endIteration; i--) {
+                generators.pop();
+                generatorsItemX[i].remove();
+                generatorsItemY[i].remove();
+            }
+        }
+        console.log(startIteration, endIteration);
+
+        for (let i = startIteration; i < endIteration; i++) {
+            console.log("added");
+            const generatorX = i % maze.rows;
+            const generatorY = Math.floor(i / maze.rows);
+            let generatorsItem = document.createElement("li");
+            generatorsItem.innerHTML = `
+                        <input class="generators__item-x" type="number" min="0" max="${
+                            maze.rows - 1
+                        }" placeholder="X" value="${generatorX}"></input>
+                        <input class="generators__item-y" type="number" min="0" max="${
+                            maze.cols - 1
+                        }" placeholder="Y" value="${generatorY}"></input>
+                    `;
+            generatorsList.appendChild(generatorsItem);
+            generators.push(new Generator({ x: generatorX, y: generatorY }));
+        }
+
+        generatorsItemX = generatorsList.querySelectorAll(
+            ".generators__item-x"
+        );
+        generatorsItemY = generatorsList.querySelectorAll(
+            ".generators__item-y"
+        );
     }
 });
 
@@ -388,6 +435,7 @@ speedBtn.addEventListener("focusout", () => {
 });
 
 resetBtn.addEventListener("click", () => {
+    // Cols and rows
     startBtn.textContent = "start";
     if (
         !parseInt(colsBtn.value) ||
@@ -408,6 +456,7 @@ resetBtn.addEventListener("click", () => {
     maze.rows = parseInt(rowsBtn.value);
     maze.cols = parseInt(colsBtn.value);
 
+    // Entrances
     if (
         !parseInt(entrancesBtn.value) ||
         parseInt(entrancesBtn.value) <= 0 ||
@@ -417,14 +466,38 @@ resetBtn.addEventListener("click", () => {
     }
     amountEntrances = parseInt(entrancesBtn.value);
 
-    generators[0].startPos = { x: 0, y: 0 };
-    generators[1].startPos = { x: 0, y: maze.rows - 1 };
-    generators[2].startPos = { x: maze.cols - 1, y: 0 };
-    generators[3].startPos = { x: maze.cols - 1, y: maze.rows - 1 };
+    // Generators
+    generatorsItemX &&
+        generatorsItemX.forEach((e, i) => {
+            if (
+                !parseInt(e.value) ||
+                parseInt(e.value) <= 0 ||
+                parseInt(e.value) > maze.cols - 1
+            ) {
+                e.value = 0;
+            }
+            console.log(generators);
+            console.log(i);
+            generators[i].startPos.x = parseInt(e.value);
+        });
+
+    generatorsItemY &&
+        generatorsItemY.forEach((e, i) => {
+            if (
+                !parseInt(e.value) ||
+                parseInt(e.value) <= 0 ||
+                parseInt(e.value) > maze.rows - 1
+            ) {
+                e.value = 0;
+            }
+            generators[i].startPos.y = parseInt(e.value);
+        });
+
     generators.forEach((gener) => {
         gener.reset();
     });
 
+    // Reset
     maze.reset();
     maze.render();
     maze.setGenerators(generators);
@@ -432,13 +505,16 @@ resetBtn.addEventListener("click", () => {
 });
 
 // TODO:
+// option(entrances, generators) - one part of two
+// random position of generators
 // stop when have found entrance(entrances)
-// option(entrances, generators)
-// export
-// another algorithms
+// export (json, text, image)
 // multiply entrances - done
 // Multiple generator - done
 // Button stop and start - done
 // procents of completing - done
 // setting of speed - done
 // instant completing - done
+// form as library
+// arbitary form of maze
+// another algorithms
