@@ -108,65 +108,71 @@ class Maze {
         // console.log("cell elem: ", cellElem);
     }
 
-    setGenerator(generator) {
-        this.generator = generator;
-        this.generator.maze = this;
+    setGenerators(generators) {
+        if (!generators.length) return;
 
-        const mazeHtml = this.parent.querySelector(".maze");
-        const cellIndex =
-            this.generator.position.x + this.generator.position.y * this.rows;
-        this.setCellPassed(cellIndex);
+        const areAllGenerators = generators.every(
+            (generator) => generator instanceof Generator
+        );
+        if (!areAllGenerators) return;
 
-        mazeHtml.insertAdjacentElement("afterbegin", generator.html);
+        this.generators = generators;
+        this.generators.forEach((generator) => {
+            generator.maze = this;
+            const mazeHtml = this.parent.querySelector(".maze");
+
+            const cellIndex =
+                generator.position.x + generator.position.y * this.rows;
+            this.setCellPassed(cellIndex);
+
+            mazeHtml.insertAdjacentElement("afterbegin", generator.html);
+        });
     }
 
     generate() {
         if (!this.rendered) return;
         if (!this.generating) return;
         if (this.generated) return;
-        // Отримуємо сторону наступного кроку
-        const nextSide = this.generator.getNextSide();
-        // console.log(this.generator.position);
-        // console.log("next: " + nextSide.key);
-        if (nextSide) {
-            this.generator.takenPath.push({
-                ...this.generator.position,
-            });
-            // Індекс клітиин до кроку
-            const pastCellIndex =
-                this.generator.position.x +
-                this.generator.position.y * this.cols;
+        this.generators.forEach((generator) => {
+            // Отримуємо сторону наступного кроку
+            const nextSide = generator.getNextSide();
 
-            // Робимо крок
-            this.generator.moveTo(moveVector[nextSide.value]);
+            if (nextSide) {
+                generator.takenPath.push({
+                    ...generator.position,
+                });
+                // Індекс клітиин до кроку
+                const pastCellIndex =
+                    generator.position.x + generator.position.y * this.cols;
 
-            // Індекс поточної клітини
-            const cellIndex =
-                this.generator.position.x +
-                this.generator.position.y * this.cols;
+                // Робимо крок
+                generator.moveTo(moveVector[nextSide.value]);
 
-            // Позначаємо клітинку пройденою
-            // console.log("Cell index: " + cellIndex);
-            this.setCellPassed(cellIndex);
-            // Оновлюємо межі
-            this.updateCellBorder(pastCellIndex, nextSide.key);
-            this.updateCellBorder(cellIndex, oppositeSide[nextSide.key]);
+                // Індекс поточної клітини
+                const cellIndex =
+                    generator.position.x + generator.position.y * this.cols;
 
-            // Оновлюємо відсоток прогресу
-            // this.cells.length/100 = this.passedCells.length/x
-            // x = (this.passedCells.length * 100)/this.cells.length
-            this.progress = (this.passedCells.length * 100) / this.cells.length;
-            progressBar.value = Math.round(this.progress);
-            console.log(progressBar.value);
-        } else {
-            const lastPosition = this.generator.takenPath.pop();
-            const backMoveVector = {
-                x: lastPosition.x - this.generator.position.x,
-                y: lastPosition.y - this.generator.position.y,
-            };
+                // Позначаємо клітинку пройденою
+                this.setCellPassed(cellIndex);
+                // Оновлюємо межі
+                this.updateCellBorder(pastCellIndex, nextSide.key);
+                this.updateCellBorder(cellIndex, oppositeSide[nextSide.key]);
 
-            this.generator.moveTo(backMoveVector);
-        }
+                // Оновлюємо відсоток прогресу
+                this.progress =
+                    (this.passedCells.length * 100) / this.cells.length;
+                progressBar.value = Math.round(this.progress);
+            } else {
+                if (!generator.takenPath.length) return;
+                const lastPosition = generator.takenPath.pop();
+                const backMoveVector = {
+                    x: lastPosition.x - generator.position.x,
+                    y: lastPosition.y - generator.position.y,
+                };
+
+                generator.moveTo(backMoveVector);
+            }
+        });
 
         if (this.cells.some((e) => !e.passed)) {
             if (this.instantly) {
@@ -182,29 +188,29 @@ class Maze {
         }
     }
 
-    generateEntrance(amount = 0) {
-        const randomRow = Math.floor(Math.random() * this.rows);
-        const randomCol = Math.floor(Math.random() * this.cols);
+    generateEntrance(amount = 4) {
+        for (let i = 0; i < amount; i++) {
+            const randomRow = Math.floor(Math.random() * this.rows);
+            const randomCol = Math.floor(Math.random() * this.cols);
 
-        let randomSide =
-            sidesKeys[Math.floor(Math.random() * sidesKeys.length)];
+            let randomSide =
+                sidesKeys[Math.floor(Math.random() * sidesKeys.length)];
 
-        let cellIndex;
+            let cellIndex;
 
-        if (randomSide === "top") {
-            cellIndex = randomCol;
-        } else if (randomSide === "bottom") {
-            cellIndex = this.cols * (this.rows - 1) + randomCol;
-        } else if (randomSide === "left") {
-            cellIndex = randomRow * this.cols;
-        } else if (randomSide === "right") {
-            cellIndex = randomRow * this.cols + (this.cols - 1);
+            if (randomSide === "top") {
+                cellIndex = randomCol;
+            } else if (randomSide === "bottom") {
+                cellIndex = this.cols * (this.rows - 1) + randomCol;
+            } else if (randomSide === "left") {
+                cellIndex = randomRow * this.cols;
+            } else if (randomSide === "right") {
+                cellIndex = randomRow * this.cols + (this.cols - 1);
+            }
+
+            this.updateCellBorder(cellIndex, randomSide);
         }
-
-        this.updateCellBorder(cellIndex, randomSide);
     }
-
-    stop() {}
 
     reset() {
         this.cells = [];
@@ -222,7 +228,7 @@ class Generator {
         this.position = position;
         this.maze;
         this.takenPath = [];
-
+        this.startPos = { ...position };
         this.html = document.createElement("div");
         this.html.className = "generator";
         this.html.style.inset = `${3 + this.position.y * 20}px 0 0 
@@ -304,9 +310,9 @@ class Generator {
                                 ${3 + this.position.x * 20}px`;
     }
 
-    reset(position = { x: 0, y: 0 }) {
+    reset(position) {
         this.takenPath = [];
-        this.position = position;
+        this.position = position || { ...this.startPos };
         this.html.style.inset = `${3 + this.position.y * 20}px 0 0 
         ${3 + this.position.x * 20}px`;
     }
@@ -320,12 +326,17 @@ const toggleStartBtnName = () => {
     }
 };
 
-const rows = parseInt(rowsBtn.value);
-const cols = parseInt(colsBtn.value);
+const rows = parseInt(rowsBtn.value) || 15;
+const cols = parseInt(colsBtn.value) || 15;
 let maze = new Maze(rows, cols);
 let generator = new Generator({ x: 0, y: 0 });
+let generator1 = new Generator({ x: 0, y: rows - 1 });
+let generator2 = new Generator({ x: cols - 1, y: 0 });
+let generator3 = new Generator({ x: cols - 1, y: rows - 1 });
+
+const generators = [generator, generator1, generator2, generator3];
 maze.render();
-maze.setGenerator(generator);
+maze.setGenerators(generators);
 maze.generateEntrance();
 
 startBtn.addEventListener("click", () => {
@@ -338,41 +349,54 @@ startBtn.addEventListener("click", () => {
 document.body.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
         maze.stepSpeed = parseInt(speedBtn.value);
-        generator.html.style.transitionDuration = speedBtn.value + "ms";
+        generators.forEach((gener) => {
+            gener.html.style.transitionDuration = speedBtn.value + "ms";
+        });
     }
 });
 
 speedBtn.addEventListener("focusout", () => {
     maze.stepSpeed = parseInt(speedBtn.value);
-    generator.html.style.transitionDuration = speedBtn.value + "ms";
+    generators.forEach((gener) => {
+        gener.html.style.transitionDuration = speedBtn.value + "ms";
+    });
 });
 
 resetBtn.addEventListener("click", () => {
     startBtn.textContent = "start";
-    if (parseInt(colsBtn.value) <= 0 || parseInt(colsBtn.value) > 100) {
+    if (
+        !parseInt(colsBtn.value) ||
+        parseInt(colsBtn.value) <= 0 ||
+        parseInt(colsBtn.value) > 100
+    ) {
         colsBtn.value = 15;
     }
 
-    if (parseInt(rowsBtn.value) <= 0 || parseInt(rowsBtn.value) > 100) {
+    if (
+        !parseInt(colsBtn.value) ||
+        parseInt(rowsBtn.value) <= 0 ||
+        parseInt(rowsBtn.value) > 100
+    ) {
         rowsBtn.value = 15;
     }
     maze.rows = parseInt(rowsBtn.value);
     maze.cols = parseInt(colsBtn.value);
 
-    generator.reset();
+    generators.forEach((gener) => {
+        gener.reset();
+    });
     maze.reset();
     maze.render();
-    maze.setGenerator(generator);
+    maze.setGenerators(generators);
     maze.generateEntrance();
 });
 
 // TODO:
-// Multiple generator
-// Rewrite on grid-layout?
-// робити кілька масивів для пройдених і не пройдених клітин чи організовувати все через один масив? (Наразі через два)
-// Button stop and start - done
-// procents of completing - done
-// setting of speed - done 
-// instant completing - done
+// Multiple generator - done
 // export
 // another algorithms
+// multiply entrances
+// Button stop and start - done
+// procents of completing - done
+// setting of speed - done
+// instant completing - done
