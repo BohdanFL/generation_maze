@@ -36,6 +36,7 @@ const resetBtn = document.getElementById("reset-btn");
 const colsBtn = document.getElementById("cols-btn");
 const rowsBtn = document.getElementById("rows-btn");
 const speedBtn = document.getElementById("speed-btn");
+const entrancesBtn = document.getElementById("entrances-btn");
 const progressBar = document.getElementById("progress-bar");
 
 class MazeCell {
@@ -335,7 +336,8 @@ const toggleStartBtnName = () => {
 
 const rows = parseInt(rowsBtn.value) || 15;
 const cols = parseInt(colsBtn.value) || 15;
-const amountEntrances = 4;
+let amountEntrances = parseInt(entrancesBtn.value) || 1;
+
 let maze = new Maze(rows, cols);
 let generator = new Generator({ x: 0, y: 0 });
 let generator1 = new Generator({ x: 0, y: rows - 1 });
@@ -343,6 +345,7 @@ let generator2 = new Generator({ x: cols - 1, y: 0 });
 let generator3 = new Generator({ x: cols - 1, y: rows - 1 });
 
 const generators = [generator, generator1, generator2, generator3];
+
 maze.render();
 maze.setGenerators(generators);
 maze.generateEntrances(amountEntrances);
@@ -356,6 +359,13 @@ startBtn.addEventListener("click", () => {
 
 document.body.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
+        if (
+            !parseInt(speedBtn.value) ||
+            parseInt(speedBtn.value) <= 0 ||
+            parseInt(speedBtn.value) > 10000
+        ) {
+            speedBtn.value = "300";
+        }
         maze.stepSpeed = parseInt(speedBtn.value);
         generators.forEach((gener) => {
             gener.html.style.transitionDuration = speedBtn.value + "ms";
@@ -364,6 +374,13 @@ document.body.addEventListener("keydown", (e) => {
 });
 
 speedBtn.addEventListener("focusout", () => {
+    if (
+        !parseInt(speedBtn.value) ||
+        parseInt(speedBtn.value) <= 0 ||
+        parseInt(speedBtn.value) > 10000
+    ) {
+        speedBtn.value = "300";
+    }
     maze.stepSpeed = parseInt(speedBtn.value);
     generators.forEach((gener) => {
         gener.html.style.transitionDuration = speedBtn.value + "ms";
@@ -381,14 +398,24 @@ resetBtn.addEventListener("click", () => {
     }
 
     if (
-        !parseInt(colsBtn.value) ||
+        !parseInt(rowsBtn.value) ||
         parseInt(rowsBtn.value) <= 0 ||
         parseInt(rowsBtn.value) > 100
     ) {
         rowsBtn.value = 15;
     }
+
     maze.rows = parseInt(rowsBtn.value);
     maze.cols = parseInt(colsBtn.value);
+
+    if (
+        !parseInt(entrancesBtn.value) ||
+        parseInt(entrancesBtn.value) <= 0 ||
+        parseInt(entrancesBtn.value) > (maze.rows + maze.cols) * 2
+    ) {
+        entrancesBtn.value = 1;
+    }
+    amountEntrances = parseInt(entrancesBtn.value);
 
     generators.forEach((gener) => {
         gener.reset();

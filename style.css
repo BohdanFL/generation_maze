@@ -68,6 +68,9 @@ button {
     top: 100px;
     width: 100%;
 }
+.option__wrapper {
+    width: 100%;
+}
 
 label {
     width: 100%;
