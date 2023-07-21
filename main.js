@@ -122,7 +122,7 @@ class Maze {
         this.generators.forEach((generator) => {
             generator.maze = this;
             const mazeHtml = this.parent.querySelector(".maze");
-
+            console.log(generator.position);
             const cellIndex =
                 generator.position.x + generator.position.y * this.rows;
             this.setCellPassed(cellIndex);
@@ -417,9 +417,14 @@ resetBtn.addEventListener("click", () => {
     }
     amountEntrances = parseInt(entrancesBtn.value);
 
+    generators[0].startPos = { x: 0, y: 0 };
+    generators[1].startPos = { x: 0, y: maze.rows - 1 };
+    generators[2].startPos = { x: maze.cols - 1, y: 0 };
+    generators[3].startPos = { x: maze.cols - 1, y: maze.rows - 1 };
     generators.forEach((gener) => {
         gener.reset();
     });
+
     maze.reset();
     maze.render();
     maze.setGenerators(generators);
