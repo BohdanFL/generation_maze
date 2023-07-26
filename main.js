@@ -20,6 +20,19 @@ const oppositeSide = {
     right: "left",
 };
 
+const example = [
+    ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0"],
+    ["0", " ", " ", " ", " ", " ", " ", " ", " ", "0"],
+    ["0", " ", " ", " ", " ", " ", " ", "0", "0", "0"],
+    ["0", " ", " ", " ", " ", "0", "0", "0", " ", " "],
+    ["0", "0", "0", "0", "0", "0", "0", "0", " ", "0"],
+    ["0", " ", " ", " ", " ", " ", " ", " ", " ", "0"],
+    ["0", " ", "0", "0", "0", "0", "0", "0", "0", "0"],
+    ["0", " ", "0", " ", " ", " ", " ", " ", " ", "0"],
+    ["0", " ", "0", " ", " ", " ", " ", " ", " ", "0"],
+    ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0"],
+];
+
 const startBtn = document.getElementById("start-btn");
 const resetBtn = document.getElementById("reset-btn");
 const colsBtn = document.getElementById("cols-btn");
@@ -29,10 +42,12 @@ const progressBar = document.getElementById("progress-bar");
 const entrancesBtn = document.getElementById("entrances-btn");
 const generatorsBtn = document.getElementById("generators-btn");
 const generatorsList = document.querySelector(".generators__list");
+const findEntrancesBtn = document.getElementById("findEntrances-btn");
 
 const maxCols = 100;
 const maxRows = 100;
 const maxSpeed = 10000;
+let findingEntrances = findEntrancesBtn.checked;
 
 const rows = parseInt(rowsBtn.value) || 15;
 const cols = parseInt(colsBtn.value) || 15;
@@ -64,6 +79,23 @@ const getRandomInt = (min, max) => {
     // The maximum is exclusive and the minimum is inclusive
 };
 
+function downloadObject(exportObj, exportName, fileType = "json") {
+    if (!exportObj || !exportName || !fileType) {
+        console.error("DOWNLOAD UNDEFINED DATA");
+        return;
+    }
+    const encodedURI = encodeURIComponent(
+        fileType === "txt" ? exportObj : JSON.stringify(exportObj)
+    );
+    const dataStr = `data:text/json;charset=utf-8,` + encodedURI;
+    const downloadAnchorNode = document.createElement("a");
+    downloadAnchorNode.href = dataStr;
+    downloadAnchorNode.download = exportName + "." + fileType;
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+
 const toggleStartBtnName = () => {
     if (startBtn.textContent.toLowerCase() === "start") {
         startBtn.textContent = "stop";
@@ -84,7 +116,10 @@ const validate = (btn, defaultValue, condition) => {
 
 const updateGeneratorsList = () => {
     const endIteration = parseInt(generatorsBtn.value);
-    const startIteration = generatorsItemX ? generatorsItemX.length : 0;
+    let startIteration = generatorsItemX ? generatorsItemX.length : 0;
+
+    // let generatorX = i % maze.rows;
+    // let generatorY = Math.floor(i / maze.rows);
 
     // Deletion Generators From List
     if (startIteration > parseInt(generatorsBtn.value)) {
@@ -94,21 +129,13 @@ const updateGeneratorsList = () => {
             generatorsItemY[i].remove();
         }
     }
-
     // Adding Generators in List
     for (let i = startIteration; i < endIteration; i++) {
-        let generatorX = i % maze.rows;
-        let generatorY = Math.floor(i / maze.rows);
+        let generatorX;
+        let generatorY;
+        let occupiedGenerator = true;
 
-        generatorX = getRandomInt(0, maze.cols);
-        generatorY = getRandomInt(0, maze.rows);
-
-        let occupiedGenerator = generators.find(
-            (g) => generatorX === g.position.x && generatorY === g.position.y
-        );
         while (occupiedGenerator) {
-            console.log("occupied: ");
-            console.log(occupiedGenerator);
             generatorX = getRandomInt(0, maze.cols);
             generatorY = getRandomInt(0, maze.rows);
             occupiedGenerator = generators.find(
@@ -274,7 +301,10 @@ class Maze {
             }
         });
 
-        if (this.cells.some((e) => !e.passed)) {
+        if (
+            (this.entrances.some((e) => !e.passed) || !findingEntrances) &&
+            this.cells.some((e) => !e.passed)
+        ) {
             if (this.instantly) {
                 this.generate();
             } else {
@@ -285,6 +315,8 @@ class Maze {
         } else {
             this.generated = true;
             console.log("GENERATING HAVE BEEN FINISHED");
+            // maze.downloadAsJSON();
+            maze.downloadAsText();
         }
     }
 
@@ -315,6 +347,47 @@ class Maze {
                 this.updateCellBorder(cellIndex, randomSide);
             }
         }
+    }
+
+    downloadAsJSON() {
+        const tempJSON = {
+            cells: this.cells,
+            passedCells: this.passedCells,
+            entrances: this.entrances,
+        };
+
+        downloadObject(tempJSON, "maze", "json");
+    }
+
+    downloadAsText() {
+        let mazeText = "";
+
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j <= this.cols * 2; j++) {
+                mazeText += "1 ";
+            }
+            mazeText += "\n";
+
+            mazeText += "1 ";
+            for (let j = 0; j < this.cols; j++) {
+                mazeText += "0 1 ";
+            }
+
+            // mazeText += "1 ".repeat(this.cols * 2 + 1);
+            // mazeText += "\n";
+
+            // mazeText += "1 ";
+            // mazeText += "0 1 ".repeat(this.cols);
+
+            mazeText += "\n";
+        }
+        mazeText += "1 ".repeat(this.cols * 2 + 1);
+        console.log(mazeText);
+
+        let arrays = [];
+        const mazeTextArr = mazeText.split(" \n");
+        // console.log(mazeText.split(" \n"));
+        // downloadObject(mazeText, "maze", "txt");
     }
 
     reset() {
@@ -428,10 +501,10 @@ class Generator {
 
 // Entry Point Start
 let maze = new Maze(rows, cols);
+maze.instantly = true;
 maze.render();
 // maze.setGenerators(generators);
 maze.generateEntrances(amountEntrances);
-
 // Entry Point End
 
 // Listeners Start
@@ -467,6 +540,9 @@ speedBtn.addEventListener("focusout", () => {
 });
 
 resetBtn.addEventListener("click", () => {
+    // Update finding entrances state
+    findingEntrances = findEntrancesBtn.checked;
+
     // Cols and rows
     startBtn.textContent = "start";
 
@@ -475,7 +551,6 @@ resetBtn.addEventListener("click", () => {
 
     maze.rows = parseInt(rowsBtn.value);
     maze.cols = parseInt(colsBtn.value);
-
     // Entrances
     validate(entrancesBtn, 1, (maze.rows + maze.cols) * 2);
 
@@ -494,6 +569,8 @@ resetBtn.addEventListener("click", () => {
             generators[i].startPos.y = parseInt(e.value);
         });
 
+    updateGeneratorsList();
+
     // Reset
     generators.forEach((gener) => {
         gener.reset();
@@ -503,12 +580,25 @@ resetBtn.addEventListener("click", () => {
     maze.setGenerators(generators);
     maze.generateEntrances(amountEntrances);
 });
+
+// downloadObjectAsJson("1 1 1 1 1 1\n1 1 1 1 1\n 1 1 1 1\n1 1 1\n 1 1 \n 1\n");
+
 // Listeners End
 
 // TODO:
-// random position of generators(randoms option) - done
-// stop when have found entrance(entrances)
 // export (json, text, image)
+// form as library
+// arbitary form of maze
+// another algorithms
+// entrances in any position(not only from the side)
+
+// BUGS:
+// зміщення початкових позицій пройдених клітинок при зміні кількості рядків чи стовпців
+// при кількості більше одного генератора, кожен генератор формує свою згенеровану закриту кімнату
+// оновлювати позицію рандомнізованих генераторів, якщо змінились розміра поля
+
+// stop when have found entrance(entrances) - done
+// random position of generators(randoms option) - done
 // option(entrances, generators) - done
 // multiply entrances - done
 // Multiple generator - done
@@ -516,7 +606,3 @@ resetBtn.addEventListener("click", () => {
 // procents of completing - done
 // setting of speed - done
 // instant completing - done
-// form as library
-// arbitary form of maze
-// another algorithms
-// entrances in any position(not only from the side)

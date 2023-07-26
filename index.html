@@ -30,16 +30,12 @@
               Speed: 
               <input type="number" min="0" max="10000" id="speed-btn" placeholder="Speed" value="300"></input>
             </label>
-  
-            <!-- <label for="generators-btn">
-              Generators: 
-              <input type="number" min="0" max="100" id="generators-btn" placeholder="Generators" value="100"></input>
-            </label> -->
             <label for="entrances-btn">
               Entrances: 
               <input type="number" min="0" max="100" id="entrances-btn" placeholder="Entrances" value="1"></input>
             </label>
           </div>
+          <div class="option__wrapper">
           <details class="generators">
             <summary>
             <label for="generators-btn">
@@ -48,12 +44,13 @@
             </label>
             </summary>
             <ul class="generators__list">
-              <!-- <li class="generators__item">
-                <input type="number" min="0" max="100" placeholder="X" value="0"></input>
-                <input type="number" min="0" max="100" placeholder="Y" value="0"></input>
-              </li> -->
             </ul>
           </details>
+          <label for="findEntrances-btn">
+            Find entrance(-s): 
+            <input type="checkbox" id="findEntrances-btn"></input>
+          </label>
+          </div>
         </div>
 
         <progress id="progress-bar" value="0" max="100">Progress Bar</progress>
