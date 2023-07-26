@@ -249,7 +249,7 @@ class Maze {
             generator.maze = this;
             const mazeHtml = this.parent.querySelector(".maze");
             const cellIndex =
-                generator.position.x + generator.position.y * this.rows;
+                generator.position.x + generator.position.y * this.cols;
             this.setCellPassed(cellIndex);
 
             mazeHtml.insertAdjacentElement("afterbegin", generator.html);
@@ -281,6 +281,7 @@ class Maze {
 
                 // Позначаємо клітинку пройденою
                 this.setCellPassed(cellIndex);
+
                 // Оновлюємо межі
                 this.updateCellBorder(pastCellIndex, nextSide.key);
                 this.updateCellBorder(cellIndex, oppositeSide[nextSide.key]);
@@ -361,33 +362,54 @@ class Maze {
 
     downloadAsText() {
         let mazeText = "";
-
+        const mazeArr = [];
+        let cellIndex, currCell;
+        const wallSign = 1;
+        const cellSign = " ";
+        const mazeLastRow = new Array(21).fill(wallSign);
         for (let i = 0; i < this.rows; i++) {
-            for (let j = 0; j <= this.cols * 2; j++) {
-                mazeText += "1 ";
-            }
-            mazeText += "\n";
-
-            mazeText += "1 ";
+            let tempArr = [];
             for (let j = 0; j < this.cols; j++) {
-                mazeText += "0 1 ";
+                cellIndex = j + i * this.cols;
+                currCell = this.cells[cellIndex];
+
+                tempArr.push(wallSign);
+                tempArr.push(currCell.borders.top ? wallSign : cellSign);
+                if (i === this.rows - 1 && !currCell.borders.bottom) {
+                    mazeLastRow[j * 2] = cellSign;
+                }
             }
+            tempArr.push(wallSign);
+            mazeArr.push(tempArr);
 
-            // mazeText += "1 ".repeat(this.cols * 2 + 1);
-            // mazeText += "\n";
+            tempArr = [];
 
-            // mazeText += "1 ";
-            // mazeText += "0 1 ".repeat(this.cols);
+            tempArr.push(wallSign);
 
-            mazeText += "\n";
+            for (let j = 0; j < this.cols; j++) {
+                cellIndex = j + i * this.cols;
+                currCell = this.cells[cellIndex];
+                tempArr.push(cellSign);
+                tempArr.push(currCell.borders.right ? wallSign : cellSign);
+                if (j === 0 && !currCell.borders.left) {
+                    tempArr[j] = cellSign;
+                }
+            }
+            mazeArr.push(tempArr);
         }
-        mazeText += "1 ".repeat(this.cols * 2 + 1);
-        console.log(mazeText);
+        mazeArr.push(mazeLastRow);
 
-        let arrays = [];
-        const mazeTextArr = mazeText.split(" \n");
-        // console.log(mazeText.split(" \n"));
-        // downloadObject(mazeText, "maze", "txt");
+        mazeArr.forEach((row) => {
+            mazeText += row.join(" ") + "\n";
+        });
+
+        const mazeObj = {
+            cells: mazeArr,
+            startPositions: maze.generators.map((g) => g.startPos),
+        };
+
+        console.log(mazeText);
+        downloadObject(mazeArr, "maze", "json");
     }
 
     reset() {
@@ -587,16 +609,16 @@ resetBtn.addEventListener("click", () => {
 
 // TODO:
 // export (json, text, image)
-// form as library
-// arbitary form of maze
-// another algorithms
 // entrances in any position(not only from the side)
+// arbitary form of maze
+// visual constructor for maze?
+// another algorithms
+// form as library
 
-// BUGS:
-// зміщення початкових позицій пройдених клітинок при зміні кількості рядків чи стовпців
-// при кількості більше одного генератора, кожен генератор формує свою згенеровану закриту кімнату
-// оновлювати позицію рандомнізованих генераторів, якщо змінились розміра поля
-
+// add option for instantly complete,
+// add option randomize position for generators,
+// add option custom positions for entrances,
+// add option for export data
 // stop when have found entrance(entrances) - done
 // random position of generators(randoms option) - done
 // option(entrances, generators) - done
@@ -606,3 +628,11 @@ resetBtn.addEventListener("click", () => {
 // procents of completing - done
 // setting of speed - done
 // instant completing - done
+
+// BUGS:
+// при кількості більше одного генератора, кожен генератор формує свою згенеровану закриту кімнату
+// оновлювати позицію рандомнізованих генераторів, якщо змінились розміра поля
+// помилка, при проходженні поля, де колонки або стовпці = 1
+// пересичення стеку виклику, якщо поле завелике, а генераторів мало
+
+// зміщення початкових позицій пройдених клітинок при зміні кількості рядків - done
