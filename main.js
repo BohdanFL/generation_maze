@@ -20,6 +20,32 @@ const oppositeSide = {
     right: "left",
 };
 
+const startBtn = document.getElementById("start-btn");
+const resetBtn = document.getElementById("reset-btn");
+const colsBtn = document.getElementById("cols-btn");
+const rowsBtn = document.getElementById("rows-btn");
+const speedBtn = document.getElementById("speed-btn");
+const progressBar = document.getElementById("progress-bar");
+const entrancesBtn = document.getElementById("entrances-btn");
+const generatorsBtn = document.getElementById("generators-btn");
+const generatorsList = document.querySelector(".generators__list");
+
+const maxCols = 100;
+const maxRows = 100;
+const maxSpeed = 10000;
+
+const rows = parseInt(rowsBtn.value) || 15;
+const cols = parseInt(colsBtn.value) || 15;
+let amountEntrances = parseInt(entrancesBtn.value) || 1;
+
+// let generator = new Generator({ x: 0, y: 0 });
+let generatorsItemX;
+let generatorsItemY;
+let generators = [];
+
+// Variables End
+
+// Functions Start
 const randomProperty = (object) => {
     const keys = Object.keys(object);
     if (keys.length > 0) {
@@ -31,16 +57,86 @@ const randomProperty = (object) => {
     return null;
 };
 
-const startBtn = document.getElementById("start-btn");
-const resetBtn = document.getElementById("reset-btn");
-const colsBtn = document.getElementById("cols-btn");
-const rowsBtn = document.getElementById("rows-btn");
-const speedBtn = document.getElementById("speed-btn");
-const progressBar = document.getElementById("progress-bar");
-const entrancesBtn = document.getElementById("entrances-btn");
-const generatorsBtn = document.getElementById("generators-btn");
-const generatorsList = document.querySelector(".generators__list");
+const getRandomInt = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min);
+    // The maximum is exclusive and the minimum is inclusive
+};
 
+const toggleStartBtnName = () => {
+    if (startBtn.textContent.toLowerCase() === "start") {
+        startBtn.textContent = "stop";
+    } else if (startBtn.textContent.toLowerCase() === "stop") {
+        startBtn.textContent = "start";
+    }
+};
+
+const validate = (btn, defaultValue, condition) => {
+    if (
+        !parseInt(btn.value) ||
+        parseInt(btn.value) <= 0 ||
+        parseInt(btn.value) > condition
+    ) {
+        btn.value = defaultValue;
+    }
+};
+
+const updateGeneratorsList = () => {
+    const endIteration = parseInt(generatorsBtn.value);
+    const startIteration = generatorsItemX ? generatorsItemX.length : 0;
+
+    // Deletion Generators From List
+    if (startIteration > parseInt(generatorsBtn.value)) {
+        for (let i = startIteration - 1; i >= endIteration; i--) {
+            generators.pop();
+            generatorsItemX[i].remove();
+            generatorsItemY[i].remove();
+        }
+    }
+
+    // Adding Generators in List
+    for (let i = startIteration; i < endIteration; i++) {
+        let generatorX = i % maze.rows;
+        let generatorY = Math.floor(i / maze.rows);
+
+        generatorX = getRandomInt(0, maze.cols);
+        generatorY = getRandomInt(0, maze.rows);
+
+        let occupiedGenerator = generators.find(
+            (g) => generatorX === g.position.x && generatorY === g.position.y
+        );
+        while (occupiedGenerator) {
+            console.log("occupied: ");
+            console.log(occupiedGenerator);
+            generatorX = getRandomInt(0, maze.cols);
+            generatorY = getRandomInt(0, maze.rows);
+            occupiedGenerator = generators.find(
+                (g) =>
+                    generatorX === g.position.x && generatorY === g.position.y
+            );
+        }
+
+        let generatorsItem = document.createElement("li");
+        generatorsItem.innerHTML = `
+                    <input class="generators__item-x" type="number" min="0" max="${
+                        maze.rows - 1
+                    }" placeholder="X" value="${generatorX}"></input>
+                    <input class="generators__item-y" type="number" min="0" max="${
+                        maze.cols - 1
+                    }" placeholder="Y" value="${generatorY}"></input>
+                `;
+        generatorsList.appendChild(generatorsItem);
+        generators.push(new Generator({ x: generatorX, y: generatorY }));
+    }
+
+    // Update Variable List
+    generatorsItemX = generatorsList.querySelectorAll(".generators__item-x");
+    generatorsItemY = generatorsList.querySelectorAll(".generators__item-y");
+};
+// Functions End
+
+// Class Start
 class MazeCell {
     constructor(position = { x: 0, y: 0 }) {
         this.borders = { top: 1, bottom: 1, left: 1, right: 1 };
@@ -328,29 +424,17 @@ class Generator {
         ${3 + this.position.x * 20}px`;
     }
 }
+// Class End
 
-const toggleStartBtnName = () => {
-    if (startBtn.textContent.toLowerCase() === "start") {
-        startBtn.textContent = "stop";
-    } else if (startBtn.textContent.toLowerCase() === "stop") {
-        startBtn.textContent = "start";
-    }
-};
-
-const rows = parseInt(rowsBtn.value) || 15;
-const cols = parseInt(colsBtn.value) || 15;
-let amountEntrances = parseInt(entrancesBtn.value) || 1;
-
+// Entry Point Start
 let maze = new Maze(rows, cols);
-// let generator = new Generator({ x: 0, y: 0 });
-let generatorsItemX;
-let generatorsItemY;
-let generators = [];
-
 maze.render();
 // maze.setGenerators(generators);
 maze.generateEntrances(amountEntrances);
 
+// Entry Point End
+
+// Listeners Start
 startBtn.addEventListener("click", () => {
     maze.generating = !maze.generating;
     maze.generate();
@@ -360,74 +444,22 @@ startBtn.addEventListener("click", () => {
 
 document.body.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-        if (
-            !parseInt(speedBtn.value) ||
-            parseInt(speedBtn.value) <= 0 ||
-            parseInt(speedBtn.value) > 10000
-        ) {
-            speedBtn.value = "300";
-        }
+        validate(speedBtn, "300", maxSpeed);
+
         maze.stepSpeed = parseInt(speedBtn.value);
         generators.forEach((gener) => {
             gener.html.style.transitionDuration = speedBtn.value + "ms";
         });
 
         //Generators
-        if (
-            !parseInt(generatorsBtn.value) ||
-            parseInt(generatorsBtn.value) <= 0 ||
-            parseInt(generatorsBtn.value) > maze.rows * maze.cols
-        ) {
-            generatorsBtn.value = 1;
-        }
-        // generators = [];
-
-        let endIteration = parseInt(generatorsBtn.value);
-        let startIteration = generatorsItemX ? generatorsItemX.length : 0;
-
-        if (startIteration > parseInt(generatorsBtn.value)) {
-            for (let i = startIteration - 1; i > endIteration; i--) {
-                generators.pop();
-                generatorsItemX[i].remove();
-                generatorsItemY[i].remove();
-            }
-        }
-        console.log(startIteration, endIteration);
-
-        for (let i = startIteration; i < endIteration; i++) {
-            console.log("added");
-            const generatorX = i % maze.rows;
-            const generatorY = Math.floor(i / maze.rows);
-            let generatorsItem = document.createElement("li");
-            generatorsItem.innerHTML = `
-                        <input class="generators__item-x" type="number" min="0" max="${
-                            maze.rows - 1
-                        }" placeholder="X" value="${generatorX}"></input>
-                        <input class="generators__item-y" type="number" min="0" max="${
-                            maze.cols - 1
-                        }" placeholder="Y" value="${generatorY}"></input>
-                    `;
-            generatorsList.appendChild(generatorsItem);
-            generators.push(new Generator({ x: generatorX, y: generatorY }));
-        }
-
-        generatorsItemX = generatorsList.querySelectorAll(
-            ".generators__item-x"
-        );
-        generatorsItemY = generatorsList.querySelectorAll(
-            ".generators__item-y"
-        );
+        validate(generatorsBtn, 1, maze.rows * maze.cols);
+        updateGeneratorsList();
     }
 });
 
 speedBtn.addEventListener("focusout", () => {
-    if (
-        !parseInt(speedBtn.value) ||
-        parseInt(speedBtn.value) <= 0 ||
-        parseInt(speedBtn.value) > 10000
-    ) {
-        speedBtn.value = "300";
-    }
+    validate(speedBtn, "300", maxSpeed);
+
     maze.stepSpeed = parseInt(speedBtn.value);
     generators.forEach((gener) => {
         gener.html.style.transitionDuration = speedBtn.value + "ms";
@@ -437,78 +469,47 @@ speedBtn.addEventListener("focusout", () => {
 resetBtn.addEventListener("click", () => {
     // Cols and rows
     startBtn.textContent = "start";
-    if (
-        !parseInt(colsBtn.value) ||
-        parseInt(colsBtn.value) <= 0 ||
-        parseInt(colsBtn.value) > 100
-    ) {
-        colsBtn.value = 15;
-    }
 
-    if (
-        !parseInt(rowsBtn.value) ||
-        parseInt(rowsBtn.value) <= 0 ||
-        parseInt(rowsBtn.value) > 100
-    ) {
-        rowsBtn.value = 15;
-    }
+    validate(colsBtn, 15, maxCols);
+    validate(rowsBtn, 15, maxRows);
 
     maze.rows = parseInt(rowsBtn.value);
     maze.cols = parseInt(colsBtn.value);
 
     // Entrances
-    if (
-        !parseInt(entrancesBtn.value) ||
-        parseInt(entrancesBtn.value) <= 0 ||
-        parseInt(entrancesBtn.value) > (maze.rows + maze.cols) * 2
-    ) {
-        entrancesBtn.value = 1;
-    }
+    validate(entrancesBtn, 1, (maze.rows + maze.cols) * 2);
+
     amountEntrances = parseInt(entrancesBtn.value);
 
     // Generators
     generatorsItemX &&
         generatorsItemX.forEach((e, i) => {
-            if (
-                !parseInt(e.value) ||
-                parseInt(e.value) <= 0 ||
-                parseInt(e.value) > maze.cols - 1
-            ) {
-                e.value = 0;
-            }
-            console.log(generators);
-            console.log(i);
+            validate(e, 0, maze.cols - 1);
             generators[i].startPos.x = parseInt(e.value);
         });
 
     generatorsItemY &&
         generatorsItemY.forEach((e, i) => {
-            if (
-                !parseInt(e.value) ||
-                parseInt(e.value) <= 0 ||
-                parseInt(e.value) > maze.rows - 1
-            ) {
-                e.value = 0;
-            }
+            validate(e, 0, maze.rows - 1);
             generators[i].startPos.y = parseInt(e.value);
         });
 
+    // Reset
     generators.forEach((gener) => {
         gener.reset();
     });
-
-    // Reset
     maze.reset();
     maze.render();
     maze.setGenerators(generators);
     maze.generateEntrances(amountEntrances);
 });
+// Listeners End
 
 // TODO:
-// option(entrances, generators) - one part of two
-// random position of generators
+// random position of generators(randoms option) - done
 // stop when have found entrance(entrances)
 // export (json, text, image)
+// option(entrances, generators) - done
 // multiply entrances - done
 // Multiple generator - done
 // Button stop and start - done
@@ -518,3 +519,4 @@ resetBtn.addEventListener("click", () => {
 // form as library
 // arbitary form of maze
 // another algorithms
+// entrances in any position(not only from the side)
