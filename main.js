@@ -38,6 +38,9 @@ const resetBtn = document.getElementById("reset-btn");
 const colsBtn = document.getElementById("cols-btn");
 const rowsBtn = document.getElementById("rows-btn");
 const speedBtn = document.getElementById("speed-btn");
+const objectExportBtn = document.getElementById("objectExport-btn");
+const arrayExportBtn = document.getElementById("arrayExport-btn");
+const textExportBtn = document.getElementById("textExport-btn");
 const progressBar = document.getElementById("progress-bar");
 const entrancesBtn = document.getElementById("entrances-btn");
 const generatorsBtn = document.getElementById("generators-btn");
@@ -84,13 +87,15 @@ function downloadObject(exportObj, exportName, fileType = "json") {
         console.error("DOWNLOAD UNDEFINED DATA");
         return;
     }
-    const encodedURI = encodeURIComponent(
+    let encodedURI = encodeURIComponent(
         fileType === "txt" ? exportObj : JSON.stringify(exportObj)
     );
-    const dataStr = `data:text/json;charset=utf-8,` + encodedURI;
+    let dataStr = `data:text/plain;charset=utf-8,` + encodedURI;
+
     const downloadAnchorNode = document.createElement("a");
     downloadAnchorNode.href = dataStr;
     downloadAnchorNode.download = exportName + "." + fileType;
+
     document.body.appendChild(downloadAnchorNode); // required for firefox
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -315,9 +320,8 @@ class Maze {
             }
         } else {
             this.generated = true;
+            this.generating = false;
             console.log("GENERATING HAVE BEEN FINISHED");
-            // maze.downloadAsJSON();
-            maze.downloadAsText();
         }
     }
 
@@ -351,18 +355,23 @@ class Maze {
     }
 
     downloadAsJSON() {
+        if (this.generating) return;
         const tempJSON = {
             cells: this.cells,
             passedCells: this.passedCells,
             entrances: this.entrances,
         };
 
-        downloadObject(tempJSON, "maze", "json");
+        downloadObject(tempJSON, "maze-objects", "json");
     }
 
-    downloadAsText() {
+    downloadAsText(textFlag = false) {
+        if (this.generating) return;
         let mazeText = "";
+        let typeFile = "json";
+        let exportName = "maze-array";
         const mazeArr = [];
+        let exportData = mazeArr;
         let cellIndex, currCell;
         const wallSign = 1;
         const cellSign = " ";
@@ -408,8 +417,13 @@ class Maze {
             startPositions: maze.generators.map((g) => g.startPos),
         };
 
-        console.log(mazeText);
-        downloadObject(mazeArr, "maze", "json");
+        if (textFlag) {
+            typeFile = "txt";
+            exportData = mazeText;
+            exportName = "maze-text";
+        }
+
+        downloadObject(exportData, exportName, typeFile);
     }
 
     reset() {
@@ -530,7 +544,7 @@ maze.generateEntrances(amountEntrances);
 // Entry Point End
 
 // Listeners Start
-startBtn.addEventListener("click", () => {
+startBtn.addEventListener("click", (e) => {
     maze.generating = !maze.generating;
     maze.generate();
 
@@ -603,18 +617,29 @@ resetBtn.addEventListener("click", () => {
     maze.generateEntrances(amountEntrances);
 });
 
+arrayExportBtn.addEventListener("click", () => {
+    maze.downloadAsText.apply(maze);
+});
+objectExportBtn.addEventListener("click", () => {
+    maze.downloadAsJSON.apply(maze);
+});
+textExportBtn.addEventListener("click", () => {
+    maze.downloadAsText.apply(maze, [true]);
+});
+
 // downloadObjectAsJson("1 1 1 1 1 1\n1 1 1 1 1\n 1 1 1 1\n1 1 1\n 1 1 \n 1\n");
 
 // Listeners End
 
 // TODO:
-// export (json, text, image)
+// export (json, text, image) - without image
 // entrances in any position(not only from the side)
 // arbitary form of maze
 // visual constructor for maze?
 // another algorithms
 // form as library
-
+// connect bootstrap
+// stylize by bootstrap
 // add option for instantly complete,
 // add option randomize position for generators,
 // add option custom positions for entrances,

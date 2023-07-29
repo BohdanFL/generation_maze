@@ -39,6 +39,10 @@ body {
 }
 
 button {
+
+}
+
+body > button {
     position: absolute;
     top: 50px; left: 50%;
     transform: translate(-50%, 0%);
@@ -116,4 +120,39 @@ input[type="checkbox"] {
 .generators {
     display: flex;
     flex-basis: 100%;
+}
+
+
+/* Exports */
+
+.exports {
+    position: absolute;
+    z-index: 10px;
+    top: 10px;
+    left: 10px;
+}
+
+.exports summary {
+    border-bottom: 1px solid ;
+    padding-bottom: 5px;
+    padding-right: 10px;
+    cursor: pointer;
+}
+
+.exports__list button {
+    display: block;
+    width: 100%;
+    border: none;
+    font-size: 16px;
+    border-bottom: 1px solid ;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.exports__list button:hover {
+    background-color: #ffffff;
+}
+
+.exports__list button:active {
+    background-color: #ffffff;
 }
