@@ -644,6 +644,7 @@ textExportBtn.addEventListener("click", () => {
 // add option randomize position for generators,
 // add option custom positions for entrances,
 // add option for export data
+// different shape of cell
 // stop when have found entrance(entrances) - done
 // random position of generators(randoms option) - done
 // option(entrances, generators) - done
