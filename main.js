@@ -537,7 +537,7 @@ class Generator {
 
 // Entry Point Start
 let maze = new Maze(rows, cols);
-maze.instantly = true;
+// maze.instantly = true;
 maze.render();
 // maze.setGenerators(generators);
 maze.generateEntrances(amountEntrances);
