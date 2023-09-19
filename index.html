@@ -4,67 +4,170 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Generation maze</title>
-        <link
+        <!-- <link
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/reset-css@5.0.1/reset.min.css"
+        /> -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+            rel="stylesheet"
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+            crossorigin="anonymous"
+        />
         <link rel="stylesheet" href="style.css" />
     </head>
-    <body>
-        <button type="button" id="start-btn">Start</button>
-        <button type="button" id="reset-btn">Reset</button>
-        <div class="options">
-          <div class="option__wrapper">
-            <label for="cols-btn">
-              Cols: <input type="number" min="0" max="100" id="cols-btn" placeholder="Cols" value="10"></input>
-            </label>
-            <label for="rows-btn">
-              Rows: <input type="number" min="0" max="100" id="rows-btn" placeholder="Rows" value="10"></input>
-            </label>
-          </div>
-          <div class="option__wrapper">
-            <label for="speed-btn">
-              Speed: 
-              <input type="number" min="0" max="10000" id="speed-btn" placeholder="Speed" value="300"></input>
-            </label>
-            <label for="entrances-btn">
-              Entrances: 
-              <input type="number" min="0" max="100" id="entrances-btn" placeholder="Entrances" value="1"></input>
-            </label>
-          </div>
-          <div class="option__wrapper">
-          <details class="generators">
-            <summary>
-            <label for="generators-btn">
-              Generators: 
-              <input type="number" min="0" max="100" id="generators-btn" placeholder="Generators" value="1"></input>
-            </label>
-            </summary>
-            <ul class="generators__list">
-            </ul>
-          </details>
-          <label for="findEntrances-btn">
-            Find entrance(-s): 
-            <input type="checkbox" id="findEntrances-btn"></input>
-          </label>
-          </div>
+    <body class="container">
+        <div class="btn-group container menu px-0 pt-2 pb-3" role="group">
+            <button
+                type="button"
+                id="start-btn"
+                class="btn btn-success rounded-0"
+            >
+                Start
+            </button>
+            <button
+                type="button"
+                id="reset-btn"
+                class="btn btn-danger rounded-0"
+            >
+                Reset
+            </button>
+            <div class="btn-group" role="group">
+                <button
+                    type="button"
+                    class="btn btn-primary dropdown-toggle rounded-0"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                >
+                    Export
+                </button>
+                <ul class="dropdown-menu text-center">
+                    <li class="dropdown-item" id="objectExport-btn">Object</li>
+                    <li class="dropdown-item" id="arrayExport-btn">Array</li>
+                    <li class="dropdown-item" id="textExport-btn">Text</li>
+                </ul>
+            </div>
         </div>
-        <details class="exports">
-          <summary>
-            Export
-          </summary>
-          <ul class="exports__list">
-            <button type="button" id="objectExport-btn">Object</button>
-            <button type="button" id="arrayExport-btn">Array</button>
-            <button type="button" id="textExport-btn">Text</button>
-          </ul>
-        </details>
+
+        <div class="options row">
+            <div class="col">
+                <div class="input-group mb-2">
+                    <span class="input-group-text">Cols: </span>
+                    <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        id="cols-btn"
+                        value="10"
+                        class="form-control shadow-none"
+                    />
+                </div>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">Rows: </span>
+                    <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        id="rows-btn"
+                        value="10"
+                        class="form-control shadow-none"
+                    />
+                </div>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">Speed: </span>
+                    <input
+                        type="number"
+                        min="0"
+                        max="10000"
+                        id="speed-btn"
+                        value="300"
+                        class="form-control shadow-none"
+                    />
+                </div>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">Entrances: </span>
+                    <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        id="entrances-btn"
+                        placeholder="Entrances"
+                        value="1"
+                        class="form-control shadow-none"
+                    />
+                </div>
+            </div>
+            <div class="col">
+                <div class="btn-group" role="group">
+                    <button
+                        type="button"
+                        class="btn btn-primary dropdown-toggle rounded-0"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                    >
+                        Generators:
+                    </button>
+                    <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        id="generators-btn"
+                        value="1"
+                        class="form-control rounded-0 shadow-none"
+                    />
+                    <ul
+                        class="generators__list dropdown-menu p-0 border-0"
+                    ></ul>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-check entrances">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="findEntrances-btn"
+                    />
+                    <label
+                        class="form-check-label"
+                        for="findEntrances-btn"
+                    >
+                        Find entrance(-s)
+                    </label>
+                </div>
+                <div class="form-check instantly">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="instantly-btn"
+                    />
+                    <label
+                        class="form-check-label"
+                        for="instantly-btn"
+                    >
+                        Instantly done
+                    </label>
+                </div>
+            </div>
+        </div>
 
         <progress id="progress-bar" value="0" max="100">Progress Bar</progress>
 
+        <script
+            src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+            integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+            crossorigin="anonymous"
+        ></script>
 
         <script src="main.js"></script>
     </body>

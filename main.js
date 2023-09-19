@@ -46,6 +46,7 @@ const entrancesBtn = document.getElementById("entrances-btn");
 const generatorsBtn = document.getElementById("generators-btn");
 const generatorsList = document.querySelector(".generators__list");
 const findEntrancesBtn = document.getElementById("findEntrances-btn");
+const instantlyBtn = document.getElementById("instantly-btn");
 
 const maxCols = 100;
 const maxRows = 100;
@@ -151,13 +152,16 @@ const updateGeneratorsList = () => {
 
         let generatorsItem = document.createElement("li");
         generatorsItem.innerHTML = `
-                    <input class="generators__item-x" type="number" min="0" max="${
-                        maze.rows - 1
-                    }" placeholder="X" value="${generatorX}"></input>
-                    <input class="generators__item-y" type="number" min="0" max="${
-                        maze.cols - 1
-                    }" placeholder="Y" value="${generatorY}"></input>
+                    <div class="input-group">
+                        <input class="generators__item-x form-control rounded-0 shadow-none" type="number" min="0" max="${
+                            maze.rows - 1
+                        }" placeholder="X" value="${generatorX}"></input>
+                        <input class="generators__item-y form-control rounded-0 shadow-none" type="number" min="0" max="${
+                            maze.cols - 1
+                        }" placeholder="Y" value="${generatorY}"></input>
+                    </div>
                 `;
+
         generatorsList.appendChild(generatorsItem);
         generators.push(new Generator({ x: generatorX, y: generatorY }));
     }
@@ -578,6 +582,7 @@ speedBtn.addEventListener("focusout", () => {
 resetBtn.addEventListener("click", () => {
     // Update finding entrances state
     findingEntrances = findEntrancesBtn.checked;
+    maze.instantly = instantlyBtn.checked;
 
     // Cols and rows
     startBtn.textContent = "start";
@@ -638,13 +643,15 @@ textExportBtn.addEventListener("click", () => {
 // visual constructor for maze?
 // another algorithms
 // form as library
-// connect bootstrap
-// stylize by bootstrap
-// add option for instantly complete,
 // add option randomize position for generators,
 // add option custom positions for entrances,
-// add option for export data
 // different shape of cell
+
+
+// add option for export data - done
+// add option for instantly complete - done
+// connect bootstrap - done
+// stylize by bootstrap - done
 // stop when have found entrance(entrances) - done
 // random position of generators(randoms option) - done
 // option(entrances, generators) - done
